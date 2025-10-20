@@ -47,7 +47,7 @@ class App {
     const tokens = rest.split(/,|:/);
 
     const sum = tokens.reduce((acc, t) => {
-      if (t === "") return acc;
+      if (t === "") return acc; 
       const n = Number(t);
 
       if (Number.isNaN(n) || n <= 0 || !Number.isInteger(n)) {
