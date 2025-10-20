@@ -3,58 +3,44 @@ import { Console } from "@woowacourse/mission-utils";
 class App {
   async run() {
     try {
-      const rawInput = await Console.readLineAsync("덧셈할 문자열을 입력해 주세요.\n");
+      const raw = await Console.readLineAsync("덧셈할 문자열을 입력해 주세요.\n");
 
-      const input = String(rawInput ?? "")
+      const input = String(raw ?? "")
         .replaceAll("\\r\\n", "\n")
         .replaceAll("\\n", "\n");
 
-      const result = this.#calculate(input);
+      const result = this.#calc(input);
       Console.print(`결과 : ${result}`);
-    } catch (error) {
-      Console.print(`[ERROR] ${error.message}`);
+    } catch (e) {
+      Console.print(`[ERROR] ${e.message ?? "알 수 없는 오류가 발생했습니다."}`);
     }
   }
 
-  #calculate(raw) {
+  #calc(inputRaw) {
     const ERROR_INVALID_INPUT = "양의 정수만 입력할 수 있습니다.";
-    const ERROR_DELIMITER_SYNTAX = "커스텀 구분자 형식이 올바르지 않습니다.";
-    const ERROR_DELIMITER_LENGTH = "커스텀 구분자는 공백이 아닌 한 글자여야 합니다.";
+    const s = String(inputRaw ?? "");
+    if (s.trim() === "") return 0;
 
-    let input = String(raw ?? "");
-    if (input.trim() === "") return 0;
-
-    let rest = input;
-    let custom = null;
-
-    if (rest.startsWith("//")) {
-      const nl = rest.indexOf("\n");
-      if (nl === -1) throw new Error(ERROR_DELIMITER_SYNTAX);
-
-      custom = rest.slice(2, nl);
-      if (custom.length !== 1 || custom.trim() === "") {
-        throw new Error(ERROR_DELIMITER_LENGTH);
-      }
-      rest = rest.slice(nl + 1);
+    let body = s;
+    const m = s.match(/^\/\/(.)\n([\s\S]*)$/);
+    if (m) {
+      const delimiter = m[1];
+      body = m[2];
+      body = body.split(delimiter).join(",");
     }
 
-    rest = rest.trim();
+    const tokens = body.trim().split(/,|:/);
 
-    if (custom !== null) {
-      rest = rest.replaceAll(custom, ",");
-    }
-
-    const tokens = rest.split(/,|:/);
-
-    const sum = tokens.reduce((acc, t) => {
-      if (t === "") return acc; 
+    let sum = 0;
+    for (const t of tokens) {
+      if (t === "") continue;
       const n = Number(t);
 
-      if (Number.isNaN(n) || n <= 0 || !Number.isInteger(n)) {
+      if (!Number.isInteger(n) || n <= 0) {
         throw new Error(ERROR_INVALID_INPUT);
       }
-      return acc + n;
-    }, 0);
+      sum += n;
+    }
 
     return sum;
   }
